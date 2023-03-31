@@ -52,7 +52,7 @@ Seeding your database
 
 We provide a folder called `seed` and this folder contains a docker-compose.yaml file that helps you set up a database. It is a PostgreSQL database and it is seeded with about 2 million records. 
 
-To set it up go into the `seed` folder and execute the command `docker compose up --build`. Once it's done, do not stop the docker compose.  This way the database keeps running and you can connect your framework of choice to connect it to the databse using the following databse URL `postgres://postgres:postgres@localhost:5432/postgres`.
+To set it up go into the `seed` folder and execute the command `docker compose up --build`. Once it's done, do not stop the docker compose.  This way the database keeps running and you can have your framework of choice to connect it to the database using the following database URL `postgres://postgres:postgres@localhost:5432/postgres`.
 
 ## Submission:
 
