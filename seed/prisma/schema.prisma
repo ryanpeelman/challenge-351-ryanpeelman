@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Profession {
+  CNA
+  LVN
+  RN
+}
+
+model Worker {
+  id         Int              @id @default(autoincrement())
+  name       String
+  is_active  Boolean          @default(false)
+  profession Profession
+  shifts     Shift[]
+  documents  DocumentWorker[]
+}
+
+model Facility {
+  id           Int                   @id @default(autoincrement())
+  name         String
+  is_active    Boolean               @default(false)
+  requirements FacilityRequirement[]
+  shifts       Shift[]
+}
+
+model Document {
+  id           Int                   @id @default(autoincrement())
+  name         String
+  is_active    Boolean               @default(false)
+  requirements FacilityRequirement[]
+  workers      DocumentWorker[]
+}
+
+model FacilityRequirement {
+  id          Int      @id @default(autoincrement())
+  facility_id Int
+  document_id Int
+  facility    Facility @relation(fields: [facility_id], references: [id])
+  document    Document @relation(fields: [document_id], references: [id])
+}
+
+model DocumentWorker {
+  id          Int      @id @default(autoincrement())
+  worker_id   Int
+  document_id Int
+  worker      Worker   @relation(fields: [worker_id], references: [id])
+  document    Document @relation(fields: [document_id], references: [id])
+}
+
+model Shift {
+  id          Int        @id @default(autoincrement())
+  start       DateTime
+  end         DateTime
+  profession  Profession
+  is_deleted  Boolean    @default(false)
+  facility_id Int
+  worker_id   Int?
+  worker      Worker?    @relation(fields: [worker_id], references: [id])
+  facility    Facility   @relation(fields: [facility_id], references: [id])
+}

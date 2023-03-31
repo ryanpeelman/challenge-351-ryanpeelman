@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:15
+    ports:
+      - 5432:5432
+    volumes:
+      - ~/.docker-conf/thc-cbh/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - cbh_thc_network
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    networks:
+      - cbh_thc_network
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
+    command: "./start.sh"
+
+networks:
+  cbh_thc_network:
+    driver: bridge
