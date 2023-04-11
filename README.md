@@ -10,7 +10,7 @@ The entities that come into play are the following, `Shift`, `Facility`, `Worker
 
 Your task is to complete the following User Story:
 
-Story: As a worker, I want to get all available shifts that I'm eligible for to work at a facility.  
+Story: As a worker, I want to get all available shifts that I'm eligible to work for.  
 
 ### Acceptance Criteria:
 
@@ -18,7 +18,7 @@ Story: As a worker, I want to get all available shifts that I'm eligible for to 
 	 - A Facility must be active.
 	 - The Shift must be active and not claimed by someone else.
 	 - The Worker must be active.
-	 - The Worker must not have claimed a shift that collides with the shift they are is eligible for.
+	 - The Worker must not have claimed a shift that collides with the shift they are eligible for.
 	 - The professions between the Shift and Worker must match.
 	 - The Worker must have all the documents required by the facilities.
  - Given an active facility, when I request all available shifts within a start and end date, then it will return a list of shifts from that facility in the specified date range.
