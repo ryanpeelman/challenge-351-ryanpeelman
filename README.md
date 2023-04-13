@@ -57,3 +57,5 @@ To set it up go into the `seed` folder and execute the command `docker compose u
 ## Submission:
 
 Please submit your solution in form of a PR. You are free in the choice of language and framework for this challenge. 
+
+After you have submitted your PR, please tag **cbhrecruiters** as a reviewer to notify us about your submission.
