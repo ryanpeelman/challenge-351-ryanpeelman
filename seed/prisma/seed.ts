@@ -40,6 +40,23 @@ interface StartEnd {
   end: Date;
 }
 
+async function createDeterministicWorker() {
+  console.log("Start seeding deterministic workers ...")
+  const worker = await prisma.worker.create({data: {name: "Deterministic #1", profession: Profession.CNA, is_active: true}})
+  const worker2 = await prisma.worker.create({data: {name: "Deterministic #2", profession: Profession.LVN, is_active: true}})
+  const worker3 = await prisma.worker.create({data: {name: "Deterministic #3", profession: Profession.RN, is_active: true}})
+  const workerDocuments = Array.from({length: maxDocuments}, (_, i) => i + 1).map((number) => ({worker_id: worker.id, document_id: number}))
+  const workerDocuments2 = Array.from({length: maxDocuments}, (_, i) => i + 1).map((number) => ({worker_id: worker2.id, document_id: number}))
+  const workerDocuments3 = Array.from({length: maxDocuments}, (_, i) => i + 1).map((number) => ({worker_id: worker3.id, document_id: number}))
+  await prisma.documentWorker.createMany({data: workerDocuments})
+  await prisma.documentWorker.createMany({data: workerDocuments2})
+  await prisma.documentWorker.createMany({data: workerDocuments3})
+  console.log("CNA worker ID: " + worker.id)
+  console.log("LVN worker ID: " + worker2.id)
+  console.log("RN worker ID: " + worker3.id)
+  console.log("Finished seeding deterministic workers ...")
+}
+
 function returnRandomStartAndEnd(): StartEnd {
   const day = returnRandomNumberBetweenOneAndLimit(31);
   const startHourIndex = returnRandomNumberBetweenOneAndLimit(3) - 1;
@@ -155,6 +172,7 @@ async function main() {
   await insertFacilityRequirements();
   await insertDocumentWorkers();
   await insertShifts();
+  await createDeterministicWorker();
   console.log(`Seeding finished.`);
 }
 
