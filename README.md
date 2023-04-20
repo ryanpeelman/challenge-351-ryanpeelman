@@ -54,7 +54,7 @@ We provide a folder called `seed` and this folder contains a docker-compose.yaml
 
 To set it up go into the `seed` folder and execute the command `docker compose up --build`. Once it's done, do not stop the docker compose.  This way the database keeps running and you can have your framework of choice to connect it to the database using the following database URL `postgres://postgres:postgres@localhost:5432/postgres`.
 
-The seed script inserts a lot of workers, between those workers, there are 3 that fullfill all documents, they all have on of the professions, at the end of the seed script the ids + the profession will be printed, with that you can test your query and see results.
+The seed script inserts a lot of workers, between those workers, there are 3 that fulfill all documents, they all have on of the professions, at the end of the seed script the ids + the profession will be printed, with that you can test your query and see results.
 
 ## Submission:
 
