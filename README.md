@@ -37,7 +37,7 @@ We provide a PostgreSQL database and a seed file for the sake of the exercise. I
 
 ## Challenge expectations:
 
-We expect the following to be part of your submission:
+We expect you to provide an HTTP server, following REST ( or whatever you think suits the best), we also expect the following to be part of your submission:
 
  - Risk mitigation through proper testing.
  - Proper documentation for your endpoint
