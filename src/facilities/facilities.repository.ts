@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { FacilityBuilder } from '../data/builders/facilityBuilder';
-import { FacilityModel } from '../data/models';
+import { Injectable } from "@nestjs/common";
+import { FacilityBuilder } from "../data/builders/facilityBuilder";
+import { FacilityModel } from "../data/models";
 
 interface IRepository {
   getAll(): Promise<FacilityModel[]>;
+  getById(facilityId: number): Promise<FacilityModel>;
   mutateFacility(facility: FacilityModel);
 }
 
@@ -12,6 +13,11 @@ export class FacilitiesRepository implements IRepository {
   async getAll(): Promise<FacilityModel[]> {
     const facilities = [];
     return facilities;
+  }
+
+  async getById(facilityId: number): Promise<FacilityModel> {
+    const facilities = await this.getAll();
+    return facilities.find((x) => x.id === facilityId);
   }
 
   mutateFacility(facility: FacilityModel) {}
@@ -23,6 +29,11 @@ export class TestFacilitiesRepository implements IRepository {
 
   async getAll(): Promise<FacilityModel[]> {
     return this.facilities;
+  }
+
+  async getById(facilityId: number): Promise<FacilityModel> {
+    const facilities = await this.getAll();
+    return facilities.find((x) => x.id === facilityId);
   }
 
   mutateFacility(facilityToUpdate: FacilityModel) {
