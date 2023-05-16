@@ -1,12 +1,13 @@
-import { v4 as uuidv4 } from 'uuid';
-import { FacilityModel, Profession, ShiftModel } from '../models';
+import { Profession } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
+import { FacilityModel, ShiftModel } from "../models";
 
 export class ShiftBuilder {
   private facility: FacilityModel;
   private end: Date;
   private id: number;
   private is_deleted: boolean = false;
-  private profession: Profession = Profession.CNA;
+  private profession: Profession = "CNA";
   private start: Date;
 
   build(): ShiftModel {

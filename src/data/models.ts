@@ -1,40 +1,11 @@
-export enum Profession {
-  CNA,
-  LVN,
-  RN,
-}
-
-export type WorkerModel = {
-  id: number;
-  name: string;
-  is_active: boolean;
-  profession: Profession;
-  shifts: ShiftModel[];
-  documents: DocumentWorkerModel[];
-};
-
-export type FacilityModel = {
-  id: number;
-  name: string;
-  is_active: boolean;
-  requirements: FacilityRequirementModel[];
-  shifts: ShiftModel[];
-};
+import { Profession, Worker } from "@prisma/client";
 
 export type DocumentModel = {
   id: number;
   name: string;
   is_active: boolean;
-  requirements: FacilityRequirementModel[];
-  workers: DocumentWorkerModel[];
-};
-
-export type FacilityRequirementModel = {
-  id: number;
-  facility_id: number;
-  document_id: number;
-  facility: FacilityModel;
-  document: DocumentModel;
+  requirements?: FacilityRequirementModel[];
+  workers?: DocumentWorkerModel[];
 };
 
 export type DocumentWorkerModel = {
@@ -42,6 +13,22 @@ export type DocumentWorkerModel = {
   worker_id: number;
   document_id: number;
   worker: WorkerModel;
+  document: DocumentModel;
+};
+
+export type FacilityModel = {
+  id: number;
+  name: string;
+  is_active: boolean;
+  requirements?: FacilityRequirementModel[];
+  shifts?: ShiftModel[];
+};
+
+export type FacilityRequirementModel = {
+  id: number;
+  facility_id: number;
+  document_id: number;
+  facility: FacilityModel;
   document: DocumentModel;
 };
 
@@ -55,4 +42,13 @@ export type ShiftModel = {
   worker_id?: number;
   worker?: WorkerModel;
   facility: FacilityModel;
+};
+
+export type WorkerModel = {
+  id: number;
+  name: string;
+  is_active: boolean;
+  profession: Profession;
+  shifts?: ShiftModel[];
+  documents?: DocumentWorkerModel[];
 };

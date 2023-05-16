@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { FacilityBuilder } from "../data/builders/facilityBuilder";
 import { FacilityModel } from "../data/models";
+import { PrismaService } from "../prisma.service";
 
 interface IRepository {
   getAll(): Promise<FacilityModel[]>;
@@ -10,14 +11,23 @@ interface IRepository {
 
 @Injectable()
 export class FacilitiesRepository implements IRepository {
+  constructor(private readonly prisma: PrismaService) {}
+
   async getAll(): Promise<FacilityModel[]> {
-    const facilities = [];
+    const facilities = await this.prisma.facility.findMany();
     return facilities;
   }
 
   async getById(facilityId: number): Promise<FacilityModel> {
-    const facilities = await this.getAll();
-    return facilities.find((x) => x.id === facilityId);
+    const facilities = await this.prisma.worker.findFirst({
+      where: {
+        id: {
+          equals: facilityId,
+        },
+      },
+    });
+
+    return facilities;
   }
 
   mutateFacility(facility: FacilityModel) {}

@@ -1,8 +1,8 @@
 import { Controller, Get, Param } from "@nestjs/common";
 import { ShiftModel } from "../data/models";
-import { FacilitiesRepository } from "src/facilities/facilities.repository";
+import { FacilitiesRepository } from "../facilities/facilities.repository";
 import { ShiftsService } from "./shifts.service";
-import { WorkersRepository } from "src/workers/workers.repository";
+import { WorkersRepository } from "../workers/workers.repository";
 
 @Controller("shifts")
 export class ShiftsController {
@@ -20,18 +20,24 @@ export class ShiftsController {
     @Param("workerId") workerId?: number
   ): Promise<ShiftModel[]> {
     const facility = await this.facilitiesRepository.getById(facilityId);
-    const worker = !!workerId
-      ? await this.workerRepository.getById(workerId)
-      : null;
 
-    const shifts = !worker
-      ? await this.shiftsService.getShiftsForFacility(facility, start, end)
-      : await this.shiftsService.getShiftsForWorkerByFacility(
-          worker,
-          facility,
-          start,
-          end
-        );
+    let shifts = [];
+
+    if (!workerId) {
+      shifts = await this.shiftsService.getShiftsForFacility(
+        facility,
+        start,
+        end
+      );
+    } else {
+      const worker = await this.workerRepository.getById(workerId);
+      shifts = await this.shiftsService.getShiftsForWorkerByFacility(
+        worker,
+        facility,
+        start,
+        end
+      );
+    }
 
     return shifts;
   }

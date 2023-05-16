@@ -1,17 +1,13 @@
-import { v4 as uuidv4 } from 'uuid';
-import {
-  DocumentWorkerModel,
-  Profession,
-  ShiftModel,
-  WorkerModel,
-} from '../models';
+import { Profession } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
+import { DocumentWorkerModel, ShiftModel, WorkerModel } from "../models";
 
 export class WorkerBuilder {
   private documents: DocumentWorkerModel[] = [];
   private id: number;
   private is_active: boolean = false;
-  private name: string = 'TestWorker';
-  private profession: Profession = Profession.CNA;
+  private name: string = "TestWorker";
+  private profession: Profession = "CNA";
   private shifts: ShiftModel[] = [];
 
   build(): WorkerModel {

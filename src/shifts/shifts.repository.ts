@@ -1,12 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { ShiftBuilder } from '../data/builders/shiftBuilder';
-import {
-  FacilityModel,
-  Profession,
-  ShiftModel,
-  WorkerModel,
-} from '../data/models';
-import { FacilitiesRepository } from '../facilities/facilities.repository';
+import { Injectable } from "@nestjs/common";
+import { ShiftBuilder } from "../data/builders/shiftBuilder";
+import { FacilityModel, ShiftModel, WorkerModel } from "../data/models";
+import { FacilitiesRepository } from "../facilities/facilities.repository";
+import { PrismaService } from "../prisma.service";
 
 interface IRepository {
   claimShift(shift: ShiftModel, worker: WorkerModel);
@@ -16,10 +12,12 @@ interface IRepository {
 
 @Injectable()
 export class ShiftsRepository implements IRepository {
+  constructor(private readonly prisma: PrismaService) {}
+
   claimShift(shift: ShiftModel, worker: WorkerModel) {}
 
   async getAll(): Promise<ShiftModel[]> {
-    const shifts = [];
+    const shifts = this.prisma.shift.findMany({ include: { facility: true } });
     return shifts;
   }
 
@@ -61,42 +59,42 @@ export class TestShiftsRepository implements IRepository {
         shiftBuilder
           .withFacility(facility)
           .withDates(
-            new Date('2023-05-15T06:00:00'),
-            new Date('2023-05-15T14:00:00'),
+            new Date("2023-05-15T06:00:00"),
+            new Date("2023-05-15T14:00:00")
           )
-          .withProfession(Profession.CNA)
+          .withProfession("CNA")
           .build(),
         shiftBuilder
           .withFacility(facility)
           .withDates(
-            new Date('2023-05-16T06:00:00'),
-            new Date('2023-05-16T14:00:00'),
+            new Date("2023-05-16T06:00:00"),
+            new Date("2023-05-16T14:00:00")
           )
-          .withProfession(Profession.CNA)
+          .withProfession("CNA")
           .build(),
         shiftBuilder
           .withFacility(facility)
           .withDates(
-            new Date('2023-05-17T06:00:00'),
-            new Date('2023-05-17T14:00:00'),
+            new Date("2023-05-17T06:00:00"),
+            new Date("2023-05-17T14:00:00")
           )
-          .withProfession(Profession.CNA)
+          .withProfession("CNA")
           .build(),
         shiftBuilder
           .withFacility(facility)
           .withDates(
-            new Date('2023-05-18T06:00:00'),
-            new Date('2023-05-18T14:00:00'),
+            new Date("2023-05-18T06:00:00"),
+            new Date("2023-05-18T14:00:00")
           )
-          .withProfession(Profession.CNA)
+          .withProfession("CNA")
           .build(),
         shiftBuilder
           .withFacility(facility)
           .withDates(
-            new Date('2023-05-19T06:00:00'),
-            new Date('2023-05-19T14:00:00'),
+            new Date("2023-05-19T06:00:00"),
+            new Date("2023-05-19T14:00:00")
           )
-          .withProfession(Profession.CNA)
+          .withProfession("CNA")
           .build(),
       ];
 

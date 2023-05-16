@@ -1,10 +1,10 @@
-import { v4 as uuidv4 } from 'uuid';
-import { FacilityModel, FacilityRequirementModel, ShiftModel } from '../models';
+import { v4 as uuidv4 } from "uuid";
+import { FacilityModel, FacilityRequirementModel, ShiftModel } from "../models";
 
 export class FacilityBuilder {
   private id: number;
   private is_active: boolean = false;
-  private name: string = 'TestFacility';
+  private name: string = "TestFacility";
   private requirements: FacilityRequirementModel[] = [];
   private shifts: ShiftModel[] = [];
 
