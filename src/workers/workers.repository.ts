@@ -18,11 +18,7 @@ export class WorkersRepository implements IRepository {
 
   async getById(workerId: number): Promise<WorkerModel> {
     const workers = await this.prisma.worker.findFirst({
-      where: {
-        id: {
-          equals: workerId,
-        },
-      },
+      where: { id: parseInt(`${workerId}`) },
     });
     return workers;
   }

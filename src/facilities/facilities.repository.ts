@@ -20,11 +20,7 @@ export class FacilitiesRepository implements IRepository {
 
   async getById(facilityId: number): Promise<FacilityModel> {
     const facilities = await this.prisma.worker.findFirst({
-      where: {
-        id: {
-          equals: facilityId,
-        },
-      },
+      where: { id: parseInt(`${facilityId}`) },
     });
 
     return facilities;

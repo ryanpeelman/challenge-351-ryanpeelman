@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from "@nestjs/common";
+import { Controller, Get, Param, Query } from "@nestjs/common";
 import { ShiftModel } from "../data/models";
 import { FacilitiesRepository } from "../facilities/facilities.repository";
 import { ShiftsService } from "./shifts.service";
@@ -12,12 +12,12 @@ export class ShiftsController {
     private readonly workerRepository: WorkersRepository
   ) {}
 
-  @Get("facility/:facilityId/shifts")
+  @Get("facility/:facilityId/shifts?")
   async getShifts(
     @Param("facilityId") facilityId: number,
-    @Param("start") start: Date,
-    @Param("end") end: Date,
-    @Param("workerId") workerId?: number
+    @Query("start") start: string,
+    @Query("end") end: string,
+    @Query("workerId") workerId?: number
   ): Promise<ShiftModel[]> {
     const facility = await this.facilitiesRepository.getById(facilityId);
 
@@ -26,16 +26,16 @@ export class ShiftsController {
     if (!workerId) {
       shifts = await this.shiftsService.getShiftsForFacility(
         facility,
-        start,
-        end
+        new Date(start),
+        new Date(end)
       );
     } else {
       const worker = await this.workerRepository.getById(workerId);
       shifts = await this.shiftsService.getShiftsForWorkerByFacility(
         worker,
         facility,
-        start,
-        end
+        new Date(start),
+        new Date(end)
       );
     }
 

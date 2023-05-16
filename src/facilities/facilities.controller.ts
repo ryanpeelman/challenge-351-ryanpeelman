@@ -14,7 +14,7 @@ export class FacilitiesController {
 
   @Get(":id")
   async getById(@Param("id") id: number): Promise<FacilityModel> {
-    const facilities = await this.facilitiesRepository.getAll();
-    return facilities.find((f) => f.id === id);
+    const facility = await this.facilitiesRepository.getById(id);
+    return facility;
   }
 }
