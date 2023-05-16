@@ -1,4 +1,4 @@
-FROM node:19-slim
+FROM node:16
 
 # Install procps so the watch mode doesn't crash the container on reload
 RUN apt-get update && apt-get -y install procps
