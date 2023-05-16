@@ -12,6 +12,7 @@ export class ShiftsController {
     private readonly workerRepository: WorkersRepository
   ) {}
 
+  // http://localhost:3000/shifts/facility/2/shifts?start=2023-05-15T06:00:00&end=2023-05-22T06:00:00
   @Get("facility/:facilityId/shifts?")
   async getShifts(
     @Param("facilityId") facilityId: number,
