@@ -1,5 +1,5 @@
 import { Controller, Get, Param } from "@nestjs/common";
-import { WorkerModel } from "src/data/models";
+import { WorkerModel } from "../data/models";
 import { WorkersRepository } from "./workers.repository";
 
 @Controller("workers")
