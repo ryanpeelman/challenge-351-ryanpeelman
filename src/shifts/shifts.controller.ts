@@ -1,12 +1,12 @@
 import { Controller, Get, Param, Query, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from "@nestjs/swagger";
+import { Dictionary } from "lodash";
 import { ShiftModel } from "../data/models";
 import { FacilitiesRepository } from "../facilities/facilities.repository";
-import { WorkersRepository } from "../workers/workers.repository";
-import { ShiftsService } from "./shifts.service";
-import { Dictionary } from "lodash";
 import { RequestPerformanceInterceptor } from "../requestperformance.interceptor";
+import { WorkersRepository } from "../workers/workers.repository";
 import { ShiftsRepository } from "./shifts.repository";
+import { ShiftsService } from "./shifts.service";
 import { groupByDate } from "./shifts.utilities";
 
 @Controller("shifts")

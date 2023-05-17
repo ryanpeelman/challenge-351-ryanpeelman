@@ -1,8 +1,8 @@
 import { Controller, Get, Param, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiParam, ApiResponse } from "@nestjs/swagger";
 import { WorkerModel } from "../data/models";
-import { WorkersRepository } from "./workers.repository";
 import { RequestPerformanceInterceptor } from "../requestperformance.interceptor";
+import { WorkersRepository } from "./workers.repository";
 
 @Controller("workers")
 @UseInterceptors(RequestPerformanceInterceptor)

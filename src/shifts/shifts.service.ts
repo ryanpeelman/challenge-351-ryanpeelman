@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { Dictionary, values } from "lodash";
 import { FacilityModel, ShiftModel, WorkerModel } from "../data/models";
 import { ShiftsRepository } from "./shifts.repository";
-import { Dictionary, groupBy, values } from "lodash";
 import { groupByDate, isWithinDateRange } from "./shifts.utilities";
 
 @Injectable()

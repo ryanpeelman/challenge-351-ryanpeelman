@@ -1,7 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { PrismaClient } from "@prisma/client";
-import { ModuleMocker } from "jest-mock";
 import { mockDeep } from "jest-mock-extended";
+import { values } from "lodash";
 import { AppModule } from "../app.module";
 import { WorkerBuilder } from "../data/builders/workerBuilder";
 import { DocumentModel, FacilityRequirementModel } from "../data/models";
@@ -16,7 +16,6 @@ import {
 } from "../workers/workers.repository";
 import { ShiftsRepository, TestShiftsRepository } from "./shifts.repository";
 import { ShiftsService } from "./shifts.service";
-import { values } from "lodash";
 
 describe("ShiftsService", () => {
   let facilitiesRepository: TestFacilitiesRepository;

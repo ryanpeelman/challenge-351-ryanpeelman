@@ -1,8 +1,8 @@
 import { Controller, Get, Param, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiParam, ApiResponse } from "@nestjs/swagger";
 import { FacilityModel } from "src/data/models";
-import { FacilitiesRepository } from "./facilities.repository";
 import { RequestPerformanceInterceptor } from "../requestperformance.interceptor";
+import { FacilitiesRepository } from "./facilities.repository";
 
 @Controller("facilities")
 @UseInterceptors(RequestPerformanceInterceptor)
