@@ -4,6 +4,7 @@ import { ShiftModel } from "../data/models";
 import { FacilitiesRepository } from "../facilities/facilities.repository";
 import { WorkersRepository } from "../workers/workers.repository";
 import { ShiftsService } from "./shifts.service";
+import { Dictionary } from "lodash";
 
 @Controller("shifts")
 export class ShiftsController {
@@ -46,17 +47,17 @@ export class ShiftsController {
   })
   @ApiResponse({
     status: 200,
-    description: "A list of Shifts.",
+    description: "A list of Shifts, grouped by date",
   })
   async getShifts(
     @Param("facilityId") facilityId: number,
     @Query("start") start: string,
     @Query("end") end: string,
     @Query("workerId") workerId?: number
-  ): Promise<ShiftModel[]> {
+  ): Promise<Dictionary<ShiftModel[]>> {
     const facility = await this.facilitiesRepository.getById(facilityId);
 
-    let shifts = [];
+    let shifts = {};
 
     if (!workerId) {
       shifts = await this.shiftsService.getShiftsForFacility(

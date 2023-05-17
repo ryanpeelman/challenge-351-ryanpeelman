@@ -16,6 +16,7 @@ import {
 } from "../workers/workers.repository";
 import { ShiftsRepository, TestShiftsRepository } from "./shifts.repository";
 import { ShiftsService } from "./shifts.service";
+import { values } from "lodash";
 
 describe("ShiftsService", () => {
   let facilitiesRepository: TestFacilitiesRepository;
@@ -49,29 +50,260 @@ describe("ShiftsService", () => {
     shiftsRepository.seedScenarios();
   });
 
-  test("Given an active Facility, when I request all available Shifts within a start and end date, then it will return a list of Shifts from that Facility in the specified date range", async () => {
-    const facilities = await facilitiesRepository.getAll();
-    const facility = facilities.find((f) => f.is_active);
+  describe("GIVEN an active Facility", () => {
+    describe("WHEN I request all available Shifts within a start and end date", () => {
+      test("THEN it will return a list of Shifts from that Facility in the specified date range", async () => {
+        const facilities = await facilitiesRepository.getAll();
+        const facility = facilities.find((f) => f.is_active);
 
-    const start = new Date("2023-05-16T06:00:00");
-    const end = new Date("2023-05-18T14:00:00");
+        const start = new Date("2023-05-16T06:00:00");
+        const end = new Date("2023-05-18T14:00:00");
 
-    const result = await service.getShiftsForFacility(facility, start, end);
+        const result = await service.getShiftsForFacility(facility, start, end);
 
-    expect(result).toBeDefined();
-    expect(result.length).toBe(3);
-    expect(new Date(result[0].start)).toStrictEqual(
-      new Date("2023-05-16T06:00:00")
-    );
-    expect(new Date(result[1].start)).toStrictEqual(
-      new Date("2023-05-17T06:00:00")
-    );
-    expect(new Date(result[2].start)).toStrictEqual(
-      new Date("2023-05-18T06:00:00")
-    );
+        expect(result).toBeDefined();
+
+        const resultShifts = values(result).flat();
+        expect(resultShifts.length).toBe(3);
+        expect(new Date(resultShifts[0].start)).toStrictEqual(
+          new Date("2023-05-16T06:00:00")
+        );
+        expect(new Date(resultShifts[1].start)).toStrictEqual(
+          new Date("2023-05-17T06:00:00")
+        );
+        expect(new Date(resultShifts[2].start)).toStrictEqual(
+          new Date("2023-05-18T06:00:00")
+        );
+      });
+
+      describe("AND a Shift is claimed within the requested start and end date", () => {
+        test("THEN it will NOT return the claimed Shift,", async () => {
+          const facilities = await facilitiesRepository.getAll();
+          const facility = facilities.find((f) => f.is_active);
+
+          const allShifts = await shiftsRepository.getAll();
+          const allShiftsForFacility = allShifts.filter(
+            (x) => x.facility_id === facility.id
+          );
+          const workerClaimedShiftId = allShiftsForFacility[2].id;
+          const anotherWorkerClaimedShiftId = allShiftsForFacility[1].id;
+
+          const workerClaimedShift = allShiftsForFacility.find(
+            (x) => x.id === workerClaimedShiftId
+          );
+          const worker = new WorkerBuilder()
+            .withName("Active Worker")
+            .isActive(true)
+            .withShifts([workerClaimedShift])
+            .build();
+          shiftsRepository.claimShift(workerClaimedShift, worker);
+
+          const anotherWorkerClaimedShift = allShiftsForFacility.find(
+            (x) => x.id === anotherWorkerClaimedShiftId
+          );
+          const anotherWorker = new WorkerBuilder()
+            .withName("Another Active Worker")
+            .isActive(true)
+            .withShifts([anotherWorkerClaimedShift])
+            .build();
+          shiftsRepository.claimShift(anotherWorkerClaimedShift, anotherWorker);
+
+          const start = new Date("2023-05-16T06:00:00");
+          const end = new Date("2023-05-18T14:00:00");
+
+          const result = await service.getShiftsForWorkerByFacility(
+            worker,
+            facility,
+            start,
+            end
+          );
+
+          expect(result).toBeDefined();
+
+          const resultShifts = values(result).flat();
+          expect(resultShifts.length).toBe(1);
+          expect(new Date(resultShifts[0].start)).toStrictEqual(
+            new Date("2023-05-18T06:00:00")
+          );
+        });
+      });
+    });
   });
 
-  test("Given a Shift is claimed and is within the requested start and end date, when I request all available Shifts within a start and end date, it will not return the claimed Shift,", async () => {
+  describe("GIVEN an inactive Facility", () => {
+    describe("WHEN I request all available Shifts within a start and end date", () => {
+      test("THEN it will NOT return a list of Shifts from that Facility", async () => {
+        const facilities = await facilitiesRepository.getAll();
+        const facility = facilities.find((f) => !f.is_active);
+
+        const start = new Date("2023-05-16T06:00:00");
+        const end = new Date("2023-05-18T14:00:00");
+
+        const result = await service.getShiftsForFacility(facility, start, end);
+
+        expect(result).toBeDefined();
+
+        const resultShifts = values(result).flat();
+        expect(resultShifts.length).toBe(0);
+      });
+    });
+  });
+
+  describe("GIVEN an active Worker", () => {
+    describe("WITH no current shifts", () => {
+      describe("WHEN I request all available Shifts within a start and end date", () => {
+        test("THEN it will return a list of Shifts from that Facility", async () => {
+          const worker = new WorkerBuilder()
+            .withName("Active Worker")
+            .withProfession("CNA")
+            .isActive(true)
+            .build();
+
+          const facilities = await facilitiesRepository.getAll();
+          const facility = facilities.find((f) => f.is_active);
+
+          const start = new Date("2023-05-16T06:00:00");
+          const end = new Date("2023-05-18T14:00:00");
+
+          const result = await service.getShiftsForWorkerByFacility(
+            worker,
+            facility,
+            start,
+            end
+          );
+
+          expect(result).toBeDefined();
+
+          const resultShifts = values(result).flat();
+          expect(resultShifts.length).toBe(3);
+          expect(new Date(resultShifts[0].start)).toStrictEqual(
+            new Date("2023-05-16T06:00:00")
+          );
+          expect(new Date(resultShifts[1].start)).toStrictEqual(
+            new Date("2023-05-17T06:00:00")
+          );
+          expect(new Date(resultShifts[2].start)).toStrictEqual(
+            new Date("2023-05-18T06:00:00")
+          );
+        });
+
+        test("THEN it will return a list of Shifts from that Facility for my profession", async () => {
+          const facilities = await facilitiesRepository.getAll();
+          const facility = facilities.find((f) => f.is_active);
+
+          const allShifts = await shiftsRepository.getAll();
+          const allShiftsForFacility = allShifts.filter(
+            (x) => x.facility_id === facility.id
+          );
+
+          const shiftToSwapToRN = allShiftsForFacility[1];
+          shiftToSwapToRN.profession = "RN";
+          shiftsRepository.mutateShift(shiftToSwapToRN);
+
+          const worker = new WorkerBuilder()
+            .withName("Active Worker")
+            .withProfession("RN")
+            .isActive(true)
+            .build();
+
+          const start = new Date("2023-05-16T06:00:00");
+          const end = new Date("2023-05-18T14:00:00");
+
+          const result = await service.getShiftsForWorkerByFacility(
+            worker,
+            facility,
+            start,
+            end
+          );
+
+          expect(result).toBeDefined();
+
+          const resultShifts = values(result).flat();
+          expect(resultShifts.length).toBe(1);
+          expect(new Date(resultShifts[0].start)).toStrictEqual(
+            new Date("2023-05-16T06:00:00")
+          );
+        });
+      });
+    });
+
+    describe("WITH current shifts", () => {
+      describe("WHEN I request all available Shifts within a start and end date", () => {
+        test("THEN it will return a list of Shifts from that Facility that do not overlap with the current Shifts for that Worker", async () => {
+          const facilities = await facilitiesRepository.getAll();
+          const facility = facilities.find((f) => f.is_active);
+
+          const allShifts = await shiftsRepository.getAll();
+          const allShiftsForFacility = allShifts.filter(
+            (x) => x.facility_id === facility.id
+          );
+          const workerClaimedShiftId = allShiftsForFacility[2].id;
+
+          const workerClaimedShift = allShiftsForFacility.find(
+            (x) => x.id === workerClaimedShiftId
+          );
+          const worker = new WorkerBuilder()
+            .withName("Active Worker")
+            .isActive(true)
+            .withShifts([workerClaimedShift])
+            .build();
+          shiftsRepository.claimShift(workerClaimedShift, worker);
+
+          const start = new Date("2023-05-16T06:00:00");
+          const end = new Date("2023-05-18T14:00:00");
+
+          const result = await service.getShiftsForWorkerByFacility(
+            worker,
+            facility,
+            start,
+            end
+          );
+
+          expect(result).toBeDefined();
+
+          const resultShifts = values(result).flat();
+          expect(resultShifts.length).toBe(2);
+          expect(new Date(resultShifts[0].start)).toStrictEqual(
+            new Date("2023-05-16T06:00:00")
+          );
+          expect(new Date(resultShifts[1].start)).toStrictEqual(
+            new Date("2023-05-18T06:00:00")
+          );
+        });
+      });
+    });
+  });
+
+  describe("GIVEN an inactive Worker", () => {
+    describe("WHEN I request all available Shifts within a start and end date", () => {
+      test("THEN it will NOT return a list of Shifts from that Facility", async () => {
+        const worker = new WorkerBuilder()
+          .withName("Inactive Worker")
+          .isActive(false)
+          .build();
+
+        const facilities = await facilitiesRepository.getAll();
+        const facility = facilities.find((f) => f.is_active);
+
+        const start = new Date("2023-05-16T06:00:00");
+        const end = new Date("2023-05-18T14:00:00");
+
+        const result = await service.getShiftsForWorkerByFacility(
+          worker,
+          facility,
+          start,
+          end
+        );
+
+        expect(result).toBeDefined();
+
+        const resultShifts = values(result).flat();
+        expect(resultShifts.length).toBe(0);
+      });
+    });
+  });
+
+  test("The Shifts must be grouped by date.", async () => {
     const facilities = await facilitiesRepository.getAll();
     const facility = facilities.find((f) => f.is_active);
 
@@ -79,73 +311,24 @@ describe("ShiftsService", () => {
     const allShiftsForFacility = allShifts.filter(
       (x) => x.facility_id === facility.id
     );
-    const workerClaimedShiftId = allShiftsForFacility[2].id;
-    const anotherWorkerClaimedShiftId = allShiftsForFacility[1].id;
 
-    const workerClaimedShift = allShiftsForFacility.find(
-      (x) => x.id === workerClaimedShiftId
-    );
-    const worker = new WorkerBuilder()
-      .withName("Active Worker")
-      .isActive(true)
-      .withShifts([workerClaimedShift])
-      .build();
-    shiftsRepository.claimShift(workerClaimedShift, worker);
+    const shiftIds = allShiftsForFacility.map((s) => s.id).slice(0, 5);
 
-    const anotherWorkerClaimedShift = allShiftsForFacility.find(
-      (x) => x.id === anotherWorkerClaimedShiftId
-    );
-    const anotherWorker = new WorkerBuilder()
-      .withName("Another Active Worker")
-      .isActive(true)
-      .withShifts([anotherWorkerClaimedShift])
-      .build();
-    shiftsRepository.claimShift(anotherWorkerClaimedShift, anotherWorker);
+    for (const [index, shiftId] of shiftIds.entries()) {
+      const shiftToUpdate = allShiftsForFacility.find((x) => x.id === shiftId);
+      shiftToUpdate.start = new Date(`2023-05-16T0${index}:00:00`);
+      shiftToUpdate.end = new Date(`2023-05-16T0${index + 1}:00:00`);
+      shiftsRepository.mutateShift(shiftToUpdate);
+    }
 
-    const start = new Date("2023-05-16T06:00:00");
-    const end = new Date("2023-05-18T14:00:00");
-
-    const result = await service.getShiftsForWorkerByFacility(
-      worker,
-      facility,
-      start,
-      end
-    );
-
-    expect(result).toBeDefined();
-    expect(result.length).toBe(1);
-    expect(new Date(result[0].start)).toStrictEqual(
-      new Date("2023-05-18T06:00:00")
-    );
-  });
-
-  test("Given an inactive Facility, when I request all available Shifts within a start and end date, then it will not return a list of Shifts from that Facility", async () => {
-    const facilities = await facilitiesRepository.getAll();
-    const facility = facilities.find((f) => !f.is_active);
-
-    const start = new Date("2023-05-16T06:00:00");
-    const end = new Date("2023-05-18T14:00:00");
-
-    const result = await service.getShiftsForFacility(facility, start, end);
-
-    expect(result).toBeDefined();
-    expect(result.length).toBe(0);
-  });
-
-  // test('The Shifts must be grouped by date.', async () => { });
-
-  test("Given an active Worker with no current shifts, when I request all available Shifts within a start and end date, then it will return a list of Shifts from that Facility", async () => {
     const worker = new WorkerBuilder()
       .withName("Active Worker")
       .withProfession("CNA")
       .isActive(true)
       .build();
 
-    const facilities = await facilitiesRepository.getAll();
-    const facility = facilities.find((f) => f.is_active);
-
-    const start = new Date("2023-05-16T06:00:00");
-    const end = new Date("2023-05-18T14:00:00");
+    const start = new Date("2023-05-16T00:00:00");
+    const end = new Date("2023-05-16T06:00:00");
 
     const result = await service.getShiftsForWorkerByFacility(
       worker,
@@ -154,116 +337,13 @@ describe("ShiftsService", () => {
       end
     );
 
+    const expectedKey = "Tue May 16 2023";
     expect(result).toBeDefined();
-    expect(result.length).toBe(3);
-    expect(new Date(result[0].start)).toStrictEqual(
-      new Date("2023-05-16T06:00:00")
-    );
-    expect(new Date(result[1].start)).toStrictEqual(
-      new Date("2023-05-17T06:00:00")
-    );
-    expect(new Date(result[2].start)).toStrictEqual(
-      new Date("2023-05-18T06:00:00")
-    );
-  });
+    expect(Object.keys(result).length).toBe(1);
+    expect(Object.keys(result)[0]).toBe(expectedKey);
 
-  test("Given an active Worker with no current shifts, when I request all available Shifts within a start and end date, then it will return a list of Shifts from that Facility for my profession", async () => {
-    const facilities = await facilitiesRepository.getAll();
-    const facility = facilities.find((f) => f.is_active);
-
-    const allShifts = await shiftsRepository.getAll();
-    const allShiftsForFacility = allShifts.filter(
-      (x) => x.facility_id === facility.id
-    );
-
-    const shiftToSwapToRN = allShiftsForFacility[1];
-    shiftToSwapToRN.profession = "RN";
-    shiftsRepository.mutateShift(shiftToSwapToRN);
-
-    const worker = new WorkerBuilder()
-      .withName("Active Worker")
-      .withProfession("RN")
-      .isActive(true)
-      .build();
-
-    const start = new Date("2023-05-16T06:00:00");
-    const end = new Date("2023-05-18T14:00:00");
-
-    const result = await service.getShiftsForWorkerByFacility(
-      worker,
-      facility,
-      start,
-      end
-    );
-
-    expect(result).toBeDefined();
-    expect(result.length).toBe(1);
-    expect(new Date(result[0].start)).toStrictEqual(
-      new Date("2023-05-16T06:00:00")
-    );
-  });
-
-  test("Given an active Worker with current shifts, when I request all available Shifts within a start and end date, then it will return a list of Shifts from that Facility that do not overlap with the current Shifts for that Worker", async () => {
-    const facilities = await facilitiesRepository.getAll();
-    const facility = facilities.find((f) => f.is_active);
-
-    const allShifts = await shiftsRepository.getAll();
-    const allShiftsForFacility = allShifts.filter(
-      (x) => x.facility_id === facility.id
-    );
-    const workerClaimedShiftId = allShiftsForFacility[2].id;
-
-    const workerClaimedShift = allShiftsForFacility.find(
-      (x) => x.id === workerClaimedShiftId
-    );
-    const worker = new WorkerBuilder()
-      .withName("Active Worker")
-      .isActive(true)
-      .withShifts([workerClaimedShift])
-      .build();
-    shiftsRepository.claimShift(workerClaimedShift, worker);
-
-    const start = new Date("2023-05-16T06:00:00");
-    const end = new Date("2023-05-18T14:00:00");
-
-    const result = await service.getShiftsForWorkerByFacility(
-      worker,
-      facility,
-      start,
-      end
-    );
-
-    expect(result).toBeDefined();
-    expect(result.length).toBe(2);
-    expect(new Date(result[0].start)).toStrictEqual(
-      new Date("2023-05-16T06:00:00")
-    );
-    expect(new Date(result[1].start)).toStrictEqual(
-      new Date("2023-05-18T06:00:00")
-    );
-  });
-
-  test("Given an inactive Worker, when I request all available Shifts within a start and end date, then it will not return a list of Shifts from that Facility", async () => {
-    const worker = new WorkerBuilder()
-      .withName("Inactive Worker")
-      .isActive(false)
-      .build();
-
-    const facilities = await facilitiesRepository.getAll();
-    const facility = facilities.find((f) => f.is_active);
-
-    const start = new Date("2023-05-16T06:00:00");
-    const end = new Date("2023-05-18T14:00:00");
-
-    const result = await service.getShiftsForWorkerByFacility(
-      worker,
-      facility,
-      start,
-      end
-    );
-
-    expect(result).toBeDefined();
-    expect(result.length).toBe(0);
+    const shifts = result[expectedKey];
+    expect(shifts.length).toBe(5);
   });
 
   test("The Worker must have all the documents required by the facilities.", async () => {
@@ -323,14 +403,16 @@ describe("ShiftsService", () => {
     );
 
     expect(result).toBeDefined();
-    expect(result.length).toBe(3);
-    expect(new Date(result[0].start)).toStrictEqual(
+
+    const resultShifts = values(result).flat();
+    expect(resultShifts.length).toBe(3);
+    expect(new Date(resultShifts[0].start)).toStrictEqual(
       new Date("2023-05-16T06:00:00")
     );
-    expect(new Date(result[1].start)).toStrictEqual(
+    expect(new Date(resultShifts[1].start)).toStrictEqual(
       new Date("2023-05-17T06:00:00")
     );
-    expect(new Date(result[2].start)).toStrictEqual(
+    expect(new Date(resultShifts[2].start)).toStrictEqual(
       new Date("2023-05-18T06:00:00")
     );
 
@@ -356,6 +438,8 @@ describe("ShiftsService", () => {
     );
 
     expect(nextResult).toBeDefined();
-    expect(nextResult.length).toBe(0);
+
+    const nextResultShifts = values(nextResult).flat();
+    expect(nextResultShifts.length).toBe(0);
   });
 });
