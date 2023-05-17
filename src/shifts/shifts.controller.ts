@@ -19,7 +19,7 @@ export class ShiftsController {
     private readonly workerRepository: WorkersRepository
   ) {}
 
-  @Get("facility/:facilityId/shifts?")
+  @Get("facility/:facilityId/active?")
   @ApiOperation({
     summary:
       "Retrieve all available Shifts at the given Facility between a given date range; optionally, constrained to a specific Worker",

@@ -52,7 +52,7 @@ export class ShiftsService {
 
     const flattenedPossibleShifts = values(possibleShifts).flat();
 
-    const currentShifts = worker.shifts;
+    const currentShifts = worker.shifts ?? [];
     const shifts = flattenedPossibleShifts.reduce(
       (accumulator, possibleShift) => {
         if (possibleShift.worker_id || possibleShift.worker) {
@@ -95,11 +95,13 @@ export class ShiftsService {
       return {};
     }
 
-    const allShifts = await this.repostiory.getByDateRange(start, end);
-
-    const allPossibleShifts = allShifts.filter(
-      (s) => s.facility_id === facility.id
+    const allShifts = await this.repostiory.getByDateRange(
+      start,
+      end,
+      facility.id
     );
+
+    const allPossibleShifts = allShifts.filter((s) => !s.is_deleted);
 
     const shifts = allPossibleShifts.filter(
       (shift) =>

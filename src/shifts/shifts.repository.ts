@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { ShiftBuilder } from "../data/builders/shiftBuilder";
 import { FacilityModel, ShiftModel, WorkerModel } from "../data/models";
 import { FacilitiesRepository } from "../facilities/facilities.repository";
@@ -14,22 +14,34 @@ interface IRepository {
 
 @Injectable()
 export class ShiftsRepository implements IRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  private logger: Logger;
+
+  constructor(private readonly prisma: PrismaService) {
+    this.logger = new Logger();
+  }
 
   claimShift(shift: ShiftModel, worker: WorkerModel) {
     //Note: This should be implemented using a standard update pattern for Prisma.
   }
 
   async getAll(): Promise<ShiftModel[]> {
-    const shifts = this.prisma.shift.findMany({ include: { facility: true } });
-    return shifts;
+    // No...
+    // const shifts = this.prisma.shift.findMany({ include: { facility: true } });
+    // return shifts;
+
+    //Note: Provide better guidance on this
+    this.logger.log("Please use a more granular query method!");
+    return [];
   }
 
   async getByDateRange(
     start: Date,
     end: Date,
-    facilityId?: number
+    facilityId?: number,
+    page: number = 0
   ): Promise<ShiftModel[]> {
+    const pageSize = 1000;
+
     const dateFilters = [
       {
         start: {
@@ -53,7 +65,8 @@ export class ShiftsRepository implements IRepository {
     const shifts = this.prisma.shift.findMany({
       include: { facility: true },
       where: where,
-      take: 1000,
+      skip: page * pageSize,
+      take: pageSize,
     });
 
     return shifts;
