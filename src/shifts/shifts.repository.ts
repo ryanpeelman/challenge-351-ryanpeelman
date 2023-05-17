@@ -3,10 +3,12 @@ import { ShiftBuilder } from "../data/builders/shiftBuilder";
 import { FacilityModel, ShiftModel, WorkerModel } from "../data/models";
 import { FacilitiesRepository } from "../facilities/facilities.repository";
 import { PrismaService } from "../prisma.service";
+import { isWithinDateRange } from "./shifts.utilities";
 
 interface IRepository {
   claimShift(shift: ShiftModel, worker: WorkerModel);
   getAll(): Promise<ShiftModel[]>;
+  getByDateRange(start: Date, end: Date): Promise<ShiftModel[]>;
   mutateShift(shift: ShiftModel);
 }
 
@@ -14,14 +16,52 @@ interface IRepository {
 export class ShiftsRepository implements IRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  claimShift(shift: ShiftModel, worker: WorkerModel) {}
+  claimShift(shift: ShiftModel, worker: WorkerModel) {
+    //Note: This should be implemented using a standard update pattern for Prisma.
+  }
 
   async getAll(): Promise<ShiftModel[]> {
     const shifts = this.prisma.shift.findMany({ include: { facility: true } });
     return shifts;
   }
 
-  mutateShift(shift: ShiftModel) {}
+  async getByDateRange(
+    start: Date,
+    end: Date,
+    facilityId?: number
+  ): Promise<ShiftModel[]> {
+    const dateFilters = [
+      {
+        start: {
+          gte: start,
+        },
+      },
+      {
+        end: {
+          lte: end,
+        },
+      },
+    ];
+    const where = !!facilityId
+      ? {
+          AND: [...dateFilters, { facility_id: parseInt(`${facilityId}`) }],
+        }
+      : {
+          AND: [...dateFilters],
+        };
+
+    const shifts = this.prisma.shift.findMany({
+      include: { facility: true },
+      where: where,
+      take: 1000,
+    });
+
+    return shifts;
+  }
+
+  mutateShift(shift: ShiftModel) {
+    //Note: This should be implemented using a standard update pattern for Prisma.
+  }
 }
 
 @Injectable()
@@ -43,6 +83,14 @@ export class TestShiftsRepository implements IRepository {
 
   async getAll(): Promise<ShiftModel[]> {
     return this.shifts;
+  }
+
+  async getByDateRange(start: Date, end: Date): Promise<ShiftModel[]> {
+    return this.shifts.filter(
+      (s) =>
+        isWithinDateRange(s.start, start, end) &&
+        isWithinDateRange(s.end, start, end)
+    );
   }
 
   mutateShift(shiftToUpdate: ShiftModel) {

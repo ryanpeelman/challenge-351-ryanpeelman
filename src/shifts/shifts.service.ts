@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { FacilityModel, ShiftModel, WorkerModel } from "../data/models";
 import { ShiftsRepository } from "./shifts.repository";
 import { Dictionary, groupBy, values } from "lodash";
+import { groupByDate, isWithinDateRange } from "./shifts.utilities";
 
 @Injectable()
 export class ShiftsService {
@@ -28,8 +29,9 @@ export class ShiftsService {
       return {};
     }
 
-    const workerDocumentIds = worker.documents.map((d) => d.document_id);
+    const workerDocumentIds = worker.documents?.map((d) => d.document_id) ?? [];
     if (
+      facility.requirements?.length &&
       !facility.requirements.every((x) =>
         workerDocumentIds.includes(x.document_id)
       )
@@ -64,8 +66,8 @@ export class ShiftsService {
         if (
           currentShifts.every(
             (s) =>
-              !this.isWithinDateRange(possibleShift.start, s.start, s.end) &&
-              !this.isWithinDateRange(possibleShift.end, s.start, s.end)
+              !isWithinDateRange(possibleShift.start, s.start, s.end) &&
+              !isWithinDateRange(possibleShift.end, s.start, s.end)
           )
         ) {
           accumulator.push(possibleShift);
@@ -76,7 +78,7 @@ export class ShiftsService {
       []
     );
 
-    return this.groupByDate(shifts);
+    return groupByDate(shifts);
   }
 
   async getShiftsForFacility(
@@ -93,7 +95,7 @@ export class ShiftsService {
       return {};
     }
 
-    const allShifts = await this.repostiory.getAll();
+    const allShifts = await this.repostiory.getByDateRange(start, end);
 
     const allPossibleShifts = allShifts.filter(
       (s) => s.facility_id === facility.id
@@ -101,26 +103,10 @@ export class ShiftsService {
 
     const shifts = allPossibleShifts.filter(
       (shift) =>
-        this.isWithinDateRange(shift.start, start, end) &&
-        this.isWithinDateRange(shift.end, start, end)
+        isWithinDateRange(shift.start, start, end) &&
+        isWithinDateRange(shift.end, start, end)
     );
 
-    return this.groupByDate(shifts);
-  }
-
-  groupByDate(shifts: ShiftModel[]): Dictionary<ShiftModel[]> {
-    const groupedShifts = groupBy<ShiftModel>(shifts, (s) =>
-      s.start.toDateString()
-    );
-    return groupedShifts;
-  }
-
-  isWithinDateRange(check: Date, start: Date, end: Date): boolean {
-    const startTime = start.getTime();
-    const endTime = end.getTime();
-
-    const checkTime = check.getTime();
-
-    return startTime <= checkTime && checkTime <= endTime;
+    return groupByDate(shifts);
   }
 }

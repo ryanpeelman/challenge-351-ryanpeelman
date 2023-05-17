@@ -19,14 +19,16 @@ export class FacilitiesRepository implements IRepository {
   }
 
   async getById(facilityId: number): Promise<FacilityModel> {
-    const facilities = await this.prisma.worker.findFirst({
+    const facilities = await this.prisma.facility.findFirst({
       where: { id: parseInt(`${facilityId}`) },
     });
 
     return facilities;
   }
 
-  mutateFacility(facility: FacilityModel) {}
+  mutateFacility(facility: FacilityModel) {
+    //Note: This should be implemented using a standard update pattern for Prisma.
+  }
 }
 
 @Injectable()

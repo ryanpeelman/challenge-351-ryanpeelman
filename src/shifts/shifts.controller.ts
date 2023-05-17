@@ -6,17 +6,19 @@ import { WorkersRepository } from "../workers/workers.repository";
 import { ShiftsService } from "./shifts.service";
 import { Dictionary } from "lodash";
 import { RequestPerformanceInterceptor } from "../requestperformance.interceptor";
+import { ShiftsRepository } from "./shifts.repository";
+import { groupByDate } from "./shifts.utilities";
 
 @Controller("shifts")
 @UseInterceptors(RequestPerformanceInterceptor)
 export class ShiftsController {
   constructor(
     private readonly shiftsService: ShiftsService,
+    private readonly shiftsRepository: ShiftsRepository,
     private readonly facilitiesRepository: FacilitiesRepository,
     private readonly workerRepository: WorkersRepository
   ) {}
 
-  // http://localhost:3000/shifts/facility/2/shifts?start=2023-05-15T06:00:00&end=2023-05-22T06:00:00
   @Get("facility/:facilityId/shifts?")
   @ApiOperation({
     summary:
@@ -78,5 +80,44 @@ export class ShiftsController {
     }
 
     return shifts;
+  }
+
+  @Get()
+  @ApiOperation({
+    summary: "Retrieve all Shifts between a given date range",
+  })
+  @ApiQuery({
+    name: "facilityId",
+    description: "The ID of the Facility entity",
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: "start",
+    description: "The date/time to start the shift search",
+    required: true,
+    type: String,
+  })
+  @ApiQuery({
+    name: "end",
+    description: "The date/time to end the shift search",
+    required: true,
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "A list of Shifts, grouped by date",
+  })
+  async getShiftsByDateRange(
+    @Query("start") start: string,
+    @Query("end") end: string,
+    @Query("facilityId") facilityId?: number
+  ): Promise<Dictionary<ShiftModel[]>> {
+    const shifts = await this.shiftsRepository.getByDateRange(
+      new Date(start),
+      new Date(end),
+      facilityId
+    );
+    return groupByDate(shifts);
   }
 }
