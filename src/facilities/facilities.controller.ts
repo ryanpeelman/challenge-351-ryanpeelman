@@ -1,9 +1,11 @@
-import { Controller, Get, Param } from "@nestjs/common";
+import { Controller, Get, Param, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiParam, ApiResponse } from "@nestjs/swagger";
 import { FacilityModel } from "src/data/models";
 import { FacilitiesRepository } from "./facilities.repository";
+import { RequestPerformanceInterceptor } from "../requestperformance.interceptor";
 
 @Controller("facilities")
+@UseInterceptors(RequestPerformanceInterceptor)
 export class FacilitiesController {
   constructor(private readonly facilitiesRepository: FacilitiesRepository) {}
 

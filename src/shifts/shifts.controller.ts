@@ -1,12 +1,14 @@
-import { Controller, Get, Param, Query } from "@nestjs/common";
+import { Controller, Get, Param, Query, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from "@nestjs/swagger";
 import { ShiftModel } from "../data/models";
 import { FacilitiesRepository } from "../facilities/facilities.repository";
 import { WorkersRepository } from "../workers/workers.repository";
 import { ShiftsService } from "./shifts.service";
 import { Dictionary } from "lodash";
+import { RequestPerformanceInterceptor } from "../requestperformance.interceptor";
 
 @Controller("shifts")
+@UseInterceptors(RequestPerformanceInterceptor)
 export class ShiftsController {
   constructor(
     private readonly shiftsService: ShiftsService,
